@@ -14,13 +14,13 @@ def create_app():
 
 
     # configure cors
-    CORS(order_service_app, resources={r"/api/*": {
-        "origins": "http://localhost:3000",
-        "methods": ["GET", "POST", "PUT", "DELETE"],
-        "allow_headers": ['Content-Type', 'Authorization'],
-        "supports_credentials": True,
-        "max_age": 3600,
-    }})
+    # CORS(order_service_app, resources={r"/api/*": {
+    #     "origins": "http://localhost:3000",
+    #     "methods": ["GET", "POST", "PUT", "DELETE"],
+    #     "allow_headers": ['Content-Type', 'Authorization'],
+    #     "supports_credentials": True,
+    #     "max_age": 3600,
+    # }})
 
 
     return order_service_app

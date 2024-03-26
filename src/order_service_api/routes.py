@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify, make_response
 from ..utils.manage_cart import write_json
 from ..observers.ui_observer import UIObserver
 
@@ -25,4 +25,6 @@ def add_to_cart():
 
 @order_service_api.route('/test', methods=['GET'])
 def test_endpoint():
-    return "endpoint test hit -- Eric", 200
+    response = make_response(jsonify("endpoint test hit -- Eric"))
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
