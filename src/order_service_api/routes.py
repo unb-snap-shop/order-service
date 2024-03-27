@@ -1,7 +1,9 @@
-from flask import Flask, Blueprint, request, jsonify, make_response
+from flask import Flask, Blueprint, request, jsonify, make_response, Response, stream_with_context
 from ..utils.manage_cart import write_json, get_json
 from ..observers.ui_observer import UIObserver
 from flask_cors import CORS
+from src.shared_resources import messages_queue
+import json
 
 order_service_api = Blueprint('order_service_api', __name__)
 
@@ -27,7 +29,7 @@ def add_to_cart():
     # cart.add_product(product_id, quantity)
     # Update database with new cart information
     write_json(data)
-    ui_observer.update('Product added to cart successfully')
+    ui_observer.update('Product added to cart successfully') # here we post a message to the ui_observer which will update the UI
     response = make_response(jsonify({'message': 'Product added to cart successfully'}), 200)
     response.headers.add('Access-Control-Allow-Origin', '*')
     
@@ -46,3 +48,16 @@ def test_endpoint():
     response = make_response(jsonify("endpoint test hit -- Eric"))
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 200
+
+@order_service_api.route('/cart_updated')
+def cart_updated():
+    def stream():
+        while True:
+            # Wait for a message from the queue and yield it
+            message = messages_queue.get()
+            order_service_api.logger.info('%s lmessage', message)
+            yield f"data: {json.dumps({'message': message})}\n\n"
+            
+    response = Response(stream_with_context(stream()), mimetype='text/event-stream')
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
