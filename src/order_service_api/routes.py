@@ -1,15 +1,20 @@
-from flask import Flask, Blueprint, request, jsonify, make_response, Response, stream_with_context
+from flask import Flask, Blueprint, request, jsonify, make_response, Response, stream_with_context, current_app
 from ..utils.manage_cart import write_json, get_json
 from ..observers.ui_observer import UIObserver
 from flask_cors import CORS
 from src.shared_resources import messages_queue
 import json
+from src.services.order_service import OrderService
 
 order_service_api = Blueprint('order_service_api', __name__)
 
 CORS(order_service_api)
 
 ui_observer = UIObserver()
+
+orderService = OrderService()
+
+orderService.add_observer(ui_observer)
 
 @order_service_api.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
@@ -19,15 +24,13 @@ def add_to_cart():
     product_name = data.get('productName')
     product_price = data.get('productPrice')
 
-    
-
     # Perform validation
     if not product_id or not product_brand or not product_name or not product_price:
         return jsonify({'error': 'Invalid request'}), 400
 
     # Updating database with new cart information
     write_json(data)
-    ui_observer.update('Product added to cart successfully') # here we post a message to the ui_observer which will update the UI
+    orderService.notify_observers('Product added to cart successfully') # here we post a message to the ui_observer which will update the UI
     response = make_response(jsonify({'message': 'Product added to cart successfully'}), 200)
     response.headers.add('Access-Control-Allow-Origin', '*')
     
@@ -53,7 +56,7 @@ def cart_updated():
         while True:
             # Wait for a message from the queue and process it
             message = messages_queue.get()
-            order_service_api.logger.info('%s lmessage', message)
+            current_app.logger.info('%s lmessage', message)
             yield f"data: {json.dumps({'message': message})}\n\n"
 
     response = Response(stream_with_context(stream()), mimetype='text/event-stream')

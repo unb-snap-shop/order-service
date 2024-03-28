@@ -14,6 +14,3 @@ class OrderService:
     def notify_observers(self, message: str):
         for observer in self.observers:
             observer.update(message)
-
-    def add_to_cart(self, user_id: str, product_id: str, quantity: int):
-        self.notify_observers(f"Product {product_id} added to cart for user {user_id}")
