@@ -1,9 +1,9 @@
 from ..interfaces.observer_interface import Observer
 
+
 class OrderService:
     def __init__(self):
         self.observers = []
-        self.cart = {}
 
     def add_observer(self, observer: Observer):
         self.observers.append(observer)
