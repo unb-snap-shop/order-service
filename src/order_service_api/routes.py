@@ -16,6 +16,7 @@ orderService = OrderService()
 
 orderService.add_observer(ui_observer)
 
+
 @order_service_api.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     data = request.json  # json from UI
@@ -30,10 +31,11 @@ def add_to_cart():
 
     # Updating database with new cart information
     write_json(data)
-    orderService.notify_observers('Product added to cart successfully') # here we post a message to the ui_observer which will update the UI
+    orderService.notify_observers(
+        'Product added to cart successfully')  # here we post a message to the ui_observer which will update the UI
     response = make_response(jsonify({'message': 'Product added to cart successfully'}), 200)
     response.headers.add('Access-Control-Allow-Origin', '*')
-    
+
     return response
 
 
@@ -44,11 +46,13 @@ def get_cart_contents():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+
 @order_service_api.route('/test', methods=['GET'])
 def test_endpoint():
     response = make_response(jsonify("endpoint test hit -- Eric"))
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 200
+
 
 @order_service_api.route('/cart_updated')
 def cart_updated():
